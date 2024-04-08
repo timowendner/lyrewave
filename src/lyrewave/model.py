@@ -1,32 +1,6 @@
 import numpy as np
 import torch
-from torch import nn, Tensor, sin, cos, pow
-
-
-def dual(in_channel: int, out_channel: int, kernel=9):
-    return nn.Sequential(
-        nn.Conv1d(in_channel, out_channel, kernel, padding=kernel//2),
-        nn.Dropout1d(p=0.2),
-        nn.ReLU(),
-        nn.Conv1d(out_channel, out_channel, kernel, padding=kernel//2),
-        nn.BatchNorm1d(out_channel),
-        nn.ReLU(),
-    )
-
-
-def up(in_channel, out_channel, scale=2, kernel=9, pad=0):
-    return nn.Sequential(
-        nn.Conv1d(in_channel, in_channel, kernel, padding=kernel//2),
-        nn.Dropout1d(p=0.2),
-        nn.ReLU(),
-        nn.Conv1d(in_channel, out_channel, kernel, padding=kernel//2),
-        nn.ReLU(),
-        nn.ConvTranspose1d(
-            out_channel, out_channel, scale, stride=scale, output_padding=pad
-        ),
-        nn.BatchNorm1d(out_channel),
-        nn.ReLU(),
-    )
+from torch import nn, Tensor
 
 
 class UNetEmbedding(nn.Module):
@@ -183,88 +157,5 @@ class UNet(nn.Module):
         encoder = reversed(encoder[:-1])
         for x_prev, up_block in zip(encoder, self.up_blocks):
             x = up_block(x, step, label, x_prev)
-        x = self.output(x)
-        return x
-
-
-class UNet_old(nn.Module):
-    def __init__(
-        self,
-        data_shape: list[int],
-        model_scale: int,
-        model_kernel: int,
-        model_layers: list[int],
-        model_out: list[int],
-        device: torch.device,
-        **kwargs
-    ) -> None:
-        super().__init__()
-
-        # define the pooling layer
-        length = data_shape[1]
-        scale = model_scale
-        kernel = model_kernel
-        self.pool = nn.MaxPool1d(scale, stride=scale)
-        self.device = device
-
-        # define the encoder
-        last = data_shape[0]
-        pad = []
-        self.length = [length]
-        self.down = nn.ModuleList([])
-        for channel in model_layers:
-            cur_pad, length = length % scale, length // scale
-            self.length.append(length)
-            pad.append(cur_pad)
-            layer = dual(last+2, channel, kernel=kernel)
-            self.down.append(layer)
-            last = channel
-
-        # define the decoder
-        self.up = nn.ModuleList([])
-        for channel in reversed(model_layers):
-            layer = up(last+2, channel, scale=scale,
-                       kernel=kernel, pad=pad.pop())
-            self.up.append(layer)
-            last = channel * 2
-
-        # define the output layer
-        output = []
-        last += 2
-        for channel in model_out:
-            output.append(
-                nn.Conv1d(last, channel, kernel, padding=kernel//2)
-            )
-            output.append(nn.ReLU())
-            last = channel
-        output.append(
-            nn.Conv1d(last, data_shape[0], kernel, padding=kernel//2)
-        )
-        self.output = nn.Sequential(*output)
-
-    def forward(self, x: Tensor, timestamp: Tensor, label: Tensor) -> Tensor:
-        timestamp = timestamp.to(self.device)
-        label = (label * 100).to(self.device)
-
-        # apply the encoder
-        encoder = []
-        length = [i for i in reversed(self.length)]
-        for layer in self.down:
-            t = self.sinusoidal(timestamp, length[-1])
-            l = self.sinusoidal(label, length.pop())
-            x = torch.cat([l, t, x], 1)
-            x = layer(x)
-            encoder.append(torch.cat([l, t, x], 1))
-            x = self.pool(x)
-
-        # apply the decoder
-        t = self.sinusoidal(timestamp, length[-1])
-        l = self.sinusoidal(label, length.pop())
-        x = torch.cat([l, t, x], 1)
-        for layer in self.up:
-            x = layer(x)
-            x = torch.cat([encoder.pop(), x], 1)
-
-        # apply the output
         x = self.output(x)
         return x
