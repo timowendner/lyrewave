@@ -1,11 +1,11 @@
 import torch
 import toml
 
-from dataloader import get_dataloaders, AudioDataset
-from diffusion import Diffusion
-from model import UNet
-from utils import open_config
-from train import train_network
+from .dataloader import get_dataloaders, AudioDataset
+from .diffusion import Diffusion
+from .model import UNet
+from .utils import open_config
+from .train import train_network
 
 
 def run(config_path: str):

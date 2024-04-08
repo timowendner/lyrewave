@@ -6,8 +6,8 @@ import numpy as np
 from torch.utils.data import Dataset, DataLoader, random_split
 
 
-from diffusion import Diffusion
-from utils import twist
+from .diffusion import Diffusion
+from .utils import twist
 
 
 def get_dataloaders(
