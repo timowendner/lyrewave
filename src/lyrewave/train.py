@@ -1,4 +1,3 @@
-import numpy as np
 import datetime
 import torch
 from tqdm import tqdm
@@ -44,15 +43,15 @@ def test_network(
     dataloader: DataLoader,
 ) -> float:
     model.eval()
-    result = []
+    result = 0
     desc = f'{"      Testing Network":<25}'
     pbar = tqdm(dataloader, desc=desc, ncols=80)
     for i, (x_t, noise, timestamp, label) in enumerate(pbar):
         output = model(x_t, timestamp, label)
         loss = criterion(output, noise)
-        result.append(loss)
+        result += loss
         if i == len(dataloader) - 1:
-            cur_desc = f'      error: {np.mean(result):.6f}'
+            cur_desc = f'      error: {int(result / i):.6f}'
             pbar.desc = f'{cur_desc:<25}'
     model.train()
-    return np.mean(result)
+    return result / i
