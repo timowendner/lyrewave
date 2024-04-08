@@ -1,0 +1,39 @@
+# folder paths
+data_path = '/Users/timowendner/Programming/AudioDiffusion/data'
+model_path = "/Users/timowendner/Programming/AudioDiffusion/models"
+output_path = "/Users/timowendner/Programming/AudioDiffusion/output"
+load_model_file = "/Users/timowendner/Programming/AudioDiffusion/models/testmodel.p"
+
+# task specification
+classes = 7
+data_shape = [1, 88200]
+data_twist = 32
+label_train = [
+    "DogBark",
+    # "Footstep",
+    # "GunShot",
+    # "Keyboard",
+    # "MovingMotorVehicle",
+    # "Rain",
+    # "Sneeze_Cough",
+]
+
+# training parameters
+lr = 0.0001
+batch_size = 16
+num_epochs = 1000
+data_on_device = false
+train_split = 0.9
+
+# diffusion parameters
+step_count = 250
+beta_start = 0.0001
+beta_end = 0.025
+
+# model specification
+model_name = 'neptune'
+model_scale = 2
+model_kernel = 9
+model_layers = [64,128,256]
+model_block_size = 2
+model_dropout = 0.2
