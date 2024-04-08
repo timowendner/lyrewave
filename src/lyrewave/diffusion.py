@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from torch import nn, sqrt
+from torch import nn, sqrt, Tensor
 
 
 class Diffusion(nn.Module):
@@ -26,7 +26,7 @@ class Diffusion(nn.Module):
         self.alpha = 1 - self.beta
         self.alpha_hat = torch.cumprod(self.alpha, dim=0)
 
-    def forward(self, x, t):
+    def forward(self, x: Tensor, t: int):
         noise = torch.randn_like(x)
         alpha_hat_t = self.alpha_hat[t]
         x_t = sqrt(alpha_hat_t) * x + sqrt(1 - alpha_hat_t) * noise

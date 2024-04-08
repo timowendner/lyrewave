@@ -11,13 +11,15 @@ from .train import train_network
 def run(config_path: str):
     config = open_config(config_path)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # device = torch.device('meta')
 
     diffusion = Diffusion(device=device, **config)
     trainloader, testloader = get_dataloaders(
         diffusion=diffusion, device=device, **config
     )
 
-    model = UNet(label_count=config['classes'], **config)
+    model = UNet(**config)
+    model = model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'])
     criterion = torch.nn.MSELoss()
 

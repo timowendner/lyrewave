@@ -111,13 +111,13 @@ class UNet(nn.Module):
         self,
         data_shape: list[int],
         data_twist: int,
-        label_count: int,
         step_count: int,
         model_scale: int,
         model_kernel: int,
         model_layers: list[int],
         model_block_size: int,
         model_dropout: float,
+        classes: int,
         **kwargs,
     ) -> None:
         super().__init__()
@@ -126,15 +126,15 @@ class UNet(nn.Module):
         scale = model_scale
         kernel = model_kernel
 
-        first_emb = UNetEmbedding(step_count, label_count, data_twist)
+        embeddings = [UNetEmbedding(step_count, classes, data_twist)]
         down_blocks = [UNetResBlock(
-            data_twist, model_layers[0], kernel, first_emb, model_block_size, model_dropout
+            data_twist, model_layers[0], kernel, embeddings[0], model_block_size, model_dropout
         )]
         up_blocks = []
 
         channels = [*model_layers, model_layers[-1]]
         for prev, channel in zip(channels, channels[1:]):
-            embedding = UNetEmbedding(step_count, label_count, prev)
+            embedding = UNetEmbedding(step_count, classes, prev)
             length, pad = divmod(length, scale)
             down_blocks.append(UNetDownBlock(
                 prev, channel, kernel, model_block_size, embedding, scale, model_dropout
@@ -142,6 +142,8 @@ class UNet(nn.Module):
             up_blocks.append(UNetUpBlock(
                 channel, prev, kernel, model_block_size, embedding, scale, model_dropout, pad
             ))
+            embeddings.append(embedding)
+        self.embedding = nn.ModuleList(embeddings)
         self.output = nn.Conv1d(
             model_layers[0], data_twist, kernel, padding=kernel//2
         )

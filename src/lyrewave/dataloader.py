@@ -75,6 +75,7 @@ class AudioDataset(Dataset):
 
     def __getitem__(self, idx):
         waveform, label = self.dataset[idx]
+        waveform = waveform.to(self.device)
 
         # apply gain and rollover
         waveform = waveform * (1 - np.random.normal(0, 0.15) ** 2)
@@ -85,8 +86,8 @@ class AudioDataset(Dataset):
         timestamp = np.random.randint(1, max_timestamp)
         x_t, noise = self.diffusion(waveform, timestamp)
 
-        timestamp = torch.Tensor([timestamp], device=self.device).long()
-        label = torch.Tensor([label], device=self.device).long()
+        timestamp = torch.Tensor([timestamp]).long().to(self.device)
+        label = torch.Tensor([label]).long().to(self.device)
         x_t = x_t.to(self.device)
         noise = noise.to(self.device)
 
