@@ -5,8 +5,9 @@ import torch
 
 def twist(arr: torch.Tensor, size: int):
     arr = arr.T.flatten()
-    add = torch.zeros(size - arr.shape[0] % size)
-    arr = torch.cat([arr, add])
+    if arr.shape[0] % size != 0:
+        add = torch.zeros(size - arr.shape[0] % size)
+        arr = torch.cat([arr, add])
     arr = arr.reshape(-1, size).T
     return arr
 

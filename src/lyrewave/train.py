@@ -49,7 +49,7 @@ def test_network(
     for i, (x_t, noise, timestamp, label) in enumerate(pbar):
         output = model(x_t, timestamp, label)
         loss = criterion(output, noise)
-        result += loss
+        result += loss.item()
         if i == len(dataloader) - 1:
             cur_desc = f'      error: {result / i:.6f}'
             pbar.desc = f'{cur_desc:<25}'

@@ -34,6 +34,6 @@ beta_end = 0.025
 model_name = 'neptune'
 model_scale = 2
 model_kernel = 9
-model_layers = [64,128,256]
+model_layers = [32, 64, 96]
 model_block_size = 2
 model_dropout = 0.2
