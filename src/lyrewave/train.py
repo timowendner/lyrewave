@@ -51,7 +51,7 @@ def test_network(
         loss = criterion(output, noise)
         result += loss
         if i == len(dataloader) - 1:
-            cur_desc = f'      error: {int(result / i):.6f}'
+            cur_desc = f'      error: {result / i:.6f}'
             pbar.desc = f'{cur_desc:<25}'
     model.train()
     return result / i
